@@ -1,78 +1,37 @@
-#include <SDL.h>
+#include "utility/SDL2Wrapper.h"
 #include <iostream>
 
-const int WINDOW_WIDTH = 640;
-const int WINDOW_HEIGHT = 480;
-const int SPEED = 2;
-
 int main(int argc, char* argv[]) {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
-        return 1;
-    }
+   SDL2Wrapper &wrapper = wrapper.getInstance();
 
-    SDL_Window* window = SDL_CreateWindow("SDL2 Animation", SDL_WINDOWPOS_CENTERED,
-                                          SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
-                                          SDL_WINDOW_OPENGL);
+    auto renderer = wrapper.GetRenderer();
+   
 
-    if (window == nullptr) {
-        std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
-        SDL_Quit();
-        return 1;
-    }
+    SDL_Rect square;
+    square.x = 320 - 50;  // 50 is half the width of the square
+    square.y = 240 - 50;  // 50 is half the height of the square
+    square.w = 100;  // width of the square
+    square.h = 100;  // height of the square
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-    if (renderer == nullptr) {
-        std::cerr << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
-
-    SDL_Rect rect;
-    rect.w = 50;
-    rect.h = 50;
-    rect.x = (WINDOW_WIDTH - rect.w) / 2;
-    rect.y = (WINDOW_HEIGHT - rect.h) / 2;
-
-    int x_vel = SPEED;
-    int y_vel = SPEED;
-
-    SDL_Event event;
-    bool running = true;
-
+    // The window is open: enter program loop (see SDL_PollEvent)
+    int running = 1;
     while (running) {
+        SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            // Check for the quit event
             if (event.type == SDL_QUIT) {
-                running = false;
+                running = 0;
             }
         }
 
-        rect.x += x_vel;
-        rect.y += y_vel;
+        wrapper.RenderBackground();
+        wrapper.RenderChessBoard();
 
-        if (rect.x <= 0 || rect.x + rect.w >= WINDOW_WIDTH) {
-            x_vel = -x_vel;
-        }
-        if (rect.y <= 0 || rect.y + rect.h >= WINDOW_HEIGHT) {
-            y_vel = -y_vel;
-        }
+        wrapper.Display();
+        wrapper.Delay(100);
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &rect);
-
-        SDL_RenderPresent(renderer);
-
-        SDL_Delay(10);
     }
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 
-    return 0;
+   return 0;
 }
