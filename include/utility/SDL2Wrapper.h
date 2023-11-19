@@ -21,6 +21,7 @@ public:
 
 	void RenderBackground();
 	void RenderChessBoard();
+	void RenderPieces();
 
 	void Display();
 	void Delay(uint32_t ms);
@@ -34,6 +35,8 @@ private:
 
 	SDL_Window* window;
 	SDL_Renderer* renderer;
+
+	SDL_Texture* pieceTextures[32];
 };
 
 #endif  // SDL2WRAPPER_H

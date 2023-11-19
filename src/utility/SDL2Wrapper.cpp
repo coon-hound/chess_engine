@@ -1,6 +1,10 @@
 #include "utility/SDL2Wrapper.h"
+
 #include <SDL.h>
 #include <iostream>
+
+#include "board/piece.h"
+#include "board/board.h"
 
 SDL2Wrapper& SDL2Wrapper::getInstance() {
 	static SDL2Wrapper instance;  // Guaranteed to be destroyed and instantiated on first use
@@ -30,8 +34,25 @@ SDL2Wrapper::SDL2Wrapper() {
         SDL_DestroyWindow(window);
         SDL_Quit();
 		exit(1);
-    }
+    } 
 
+    IMG_Init(IMG_INIT_PNG);
+
+    //pieces texture (white pieces)
+    pieceTextures[Piece::White | Piece::King] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_klt60.png")); 
+    pieceTextures[Piece::White | Piece::Pawn] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_plt60.png")); 
+    pieceTextures[Piece::White | Piece::Knight] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_nlt60.png")); 
+    pieceTextures[Piece::White | Piece::Bishop] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_blt60.png")); 
+    pieceTextures[Piece::White | Piece::Rook] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_rlt60.png")); 
+    pieceTextures[Piece::White | Piece::Queen] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_qlt60.png")); 
+    
+    pieceTextures[Piece::Black | Piece::King] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_kdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Pawn] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_pdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Knight] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_ndt60.png")); 
+    pieceTextures[Piece::Black | Piece::Bishop] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_bdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Rook] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_rdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Queen] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_qdt60.png")); 
+ 
 }
 
 SDL2Wrapper::~SDL2Wrapper() {
@@ -71,6 +92,83 @@ void SDL2Wrapper::RenderChessBoard() {
             }
 
             SDL_RenderFillRect(renderer, &rect);
+        }
+    }
+}
+
+void SDL2Wrapper::RenderPieces() {
+	Board &board = board.GetInstance();
+	int* square = board.GetSquare();
+
+	int cellSize = CHESS_BOARD_WIDTH / 8;
+
+    int startX = (WINDOW_WIDTH - CHESS_BOARD_WIDTH) / 2;
+    int startY = (WINDOW_HEIGHT - CHESS_BOARD_WIDTH) / 2;    
+
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            SDL_Texture* currPieceTexture;
+            switch (square[i * 8 + j]) { 
+                case Piece::White | Piece::King:
+                    currPieceTexture = pieceTextures[Piece::White | Piece::King];
+                    break;
+                
+                case Piece::White | Piece::Pawn:
+                    currPieceTexture = pieceTextures[Piece::White | Piece::Pawn];
+                    break;
+
+                case Piece::White | Piece::Knight:
+                    currPieceTexture = pieceTextures[Piece::White | Piece::Knight];
+                    break;
+
+                case Piece::White | Piece::Bishop:
+                    currPieceTexture = pieceTextures[Piece::White | Piece::Bishop];
+                    break;
+
+                case Piece::White | Piece::Rook:
+                    currPieceTexture = pieceTextures[Piece::White | Piece::Rook];
+                    break;
+
+                case Piece::White | Piece::Queen:
+                    currPieceTexture = pieceTextures[Piece::White | Piece::Queen];
+                    break;
+
+                case Piece::Black | Piece::King:
+                    currPieceTexture = pieceTextures[Piece::Black | Piece::King];
+                    break;
+                
+                case Piece::Black | Piece::Pawn:
+                    currPieceTexture = pieceTextures[Piece::Black | Piece::Pawn];
+                    break;
+
+                case Piece::Black | Piece::Knight:
+                    currPieceTexture = pieceTextures[Piece::Black | Piece::Knight];
+                    break;
+
+                case Piece::Black | Piece::Bishop:
+                    currPieceTexture = pieceTextures[Piece::Black | Piece::Bishop];
+                    break;
+
+                case Piece::Black | Piece::Rook:
+                    currPieceTexture = pieceTextures[Piece::Black | Piece::Rook];
+                    break;
+
+                case Piece::Black | Piece::Queen:
+                    currPieceTexture = pieceTextures[Piece::Black | Piece::Queen];
+                    break;
+                default:
+                    continue;
+            }
+            
+            
+            SDL_Rect rect;
+
+            rect.x = startX + j * cellSize;
+            rect.y = startY + i * cellSize;
+            rect.w = cellSize;
+            rect.h = cellSize;
+
+            SDL_RenderCopy(renderer, currPieceTexture, NULL, &rect);
         }
     }
 }
