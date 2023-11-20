@@ -14,7 +14,7 @@
 
 class SDL2Wrapper{
 public:
-	static SDL2Wrapper& getInstance();  // Static method for getting the single instance
+	static SDL2Wrapper& GetInstance();  // Static method for getting the single instance
 
 	SDL_Renderer* GetRenderer();
 	SDL_Window* GetWindow();
@@ -22,6 +22,8 @@ public:
 	void RenderBackground();
 	void RenderChessBoard();
 	void RenderPieces();
+
+	int PollInputs();
 
 	void Display();
 	void Delay(uint32_t ms);
@@ -32,6 +34,8 @@ public:
 private:
 	SDL2Wrapper();  // Private constructor
 	~SDL2Wrapper();  // Private destructor
+
+	int GetBoardIndiceFromCoordinates (int x, int y);
 
 	SDL_Window* window;
 	SDL_Renderer* renderer;

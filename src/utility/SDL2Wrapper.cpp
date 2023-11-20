@@ -6,7 +6,24 @@
 #include "board/piece.h"
 #include "board/board.h"
 
-SDL2Wrapper& SDL2Wrapper::getInstance() {
+int SDL2Wrapper::GetBoardIndiceFromCoordinates (int x, int y) {
+    int startX = (WINDOW_WIDTH - CHESS_BOARD_WIDTH) / 2;
+    int startY = (WINDOW_HEIGHT - CHESS_BOARD_WIDTH) / 2;
+	int cellSize = CHESS_BOARD_WIDTH / 8;
+
+    x -= startX;
+    x /= cellSize; 
+    // x -= (x % cellSize);
+
+    y -= startY;
+    y /= cellSize;
+    // y -= (y % cellSize);
+
+    printf("x = %d, y = %d\n", x, y);
+    return y * 8 + x;
+} 
+
+SDL2Wrapper& SDL2Wrapper::GetInstance() {
 	static SDL2Wrapper instance;  // Guaranteed to be destroyed and instantiated on first use
 	return instance;
 }
@@ -58,6 +75,10 @@ SDL2Wrapper::SDL2Wrapper() {
 SDL2Wrapper::~SDL2Wrapper() {
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+
+    // free textures
+    // for (int i = 0; i < 
+
 	SDL_Quit();
 }
 
@@ -171,6 +192,30 @@ void SDL2Wrapper::RenderPieces() {
             SDL_RenderCopy(renderer, currPieceTexture, NULL, &rect);
         }
     }
+}
+
+int SDL2Wrapper::PollInputs() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        // Check for the quit eventj
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        switch (event.type) {
+            case SDL_QUIT:
+                return false;
+                break;
+            
+            // case SDL_MOUSEBUTTONDOWN:
+
+
+        };
+
+        printf("curr mouseX = %d, curr mouseY = %d\n", mouseX, mouseY);
+        printf("predicted coord = %d\n", GetBoardIndiceFromCoordinates(mouseX, mouseY));
+
+    }
+
+    
 }
 
 void SDL2Wrapper::Display() {

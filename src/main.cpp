@@ -4,22 +4,19 @@
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    SDL2Wrapper &wrapper = wrapper.getInstance();
+    SDL2Wrapper &wrapper = wrapper.GetInstance();
 
     auto renderer = wrapper.GetRenderer();
-   
+    
+    // load starting position
     FenUtility::LoadPositionFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    // FenUtility::LoadPositionFromFen("2r4r/ppq1nk2/4b1pp/3pPp2/3P1Q1P/3B3N/P1PK1P2/R6R w - - 8 21");
+
 
     // The window is open: enter program loop (see SDL_PollEvent)
     int running = 1;
     while (running) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            // Check for the quit event
-            if (event.type == SDL_QUIT) {
-                running = 0;
-            }
-        }
+        running = wrapper.PollInputs();
 
         wrapper.RenderBackground();
         wrapper.RenderChessBoard();

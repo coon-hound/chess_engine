@@ -3,6 +3,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <iostream>
 
 std::vector<std::string> static split(const std::string& s) {
     std::vector<std::string> tokens;
@@ -39,25 +40,28 @@ void FenUtility::LoadPositionFromFen(std::string fen) {
 
 	auto splitFen = split(fen);
 
+	std::cout << splitFen[0] << "\n";
+
 	int file = 0;
-	int rank = 7;
+	int rank = 0;
 
 	for (char c : splitFen[0]) {
 		if (c == '/') {
 			file = 0;	
-			rank --;
+			rank++;
 			continue;
 		}
 		if (isdigit(c)) {
 			file += c - '0';
+			printf("file = %d, c = %d\n", file, c - '0');
 			continue;
 		}
 
 		if (isupper(c)) {
-			square[rank * 8 + file] = charToPiece[tolower(c)] | Piece::Black;
+			square[rank * 8 + file] = charToPiece[tolower(c)] | Piece::White;
 		}
 		else if (islower(c)) {
-			square[rank * 8 + file] = charToPiece[c] | Piece::White;
+			square[rank * 8 + file] = charToPiece[c] | Piece::Black;
 		} 
 
 		file ++;
