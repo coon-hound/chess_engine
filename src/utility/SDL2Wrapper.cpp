@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 #include <iostream>
+#include <assert.h>
 
 #include "board/piece.h"
 #include "board/board.h"
@@ -19,8 +20,15 @@ int SDL2Wrapper::GetBoardIndiceFromCoordinates (int x, int y) {
     y /= cellSize;
     // y -= (y % cellSize);
 
-    printf("x = %d, y = %d\n", x, y);
-    return y * 8 + x;
+    if (x < 0 || y < 0 || x > 7 || y > 7) {
+        return -1;
+    }
+
+    int ret = y * 8 + x;
+
+    assert(ret >= 0 && ret <= 63);
+
+    return ret;
 } 
 
 SDL2Wrapper& SDL2Wrapper::GetInstance() {
@@ -69,7 +77,9 @@ SDL2Wrapper::SDL2Wrapper() {
     pieceTextures[Piece::Black | Piece::Bishop] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_bdt60.png")); 
     pieceTextures[Piece::Black | Piece::Rook] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_rdt60.png")); 
     pieceTextures[Piece::Black | Piece::Queen] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_qdt60.png")); 
- 
+
+    selectedPieceIndice = -1;
+    selectedPiece = -1;
 }
 
 SDL2Wrapper::~SDL2Wrapper() {
@@ -129,7 +139,26 @@ void SDL2Wrapper::RenderPieces() {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             SDL_Texture* currPieceTexture;
-            switch (square[i * 8 + j]) { 
+            int currBoardIndice = i * 8 + j;
+
+            if (currBoardIndice == selectedPieceIndice && selectedPieceIndice != -1) {
+                printf("curr board indice = %d, selected piece indice = %d, selected piece = %d\n", currBoardIndice, selectedPieceIndice, selectedPiece);
+
+                currPieceTexture = pieceTextures[selectedPiece];                
+
+                SDL_Rect rect;
+
+                rect.x = mouseX - (cellSize / 2);
+                rect.y = mouseY - (cellSize / 2);
+                rect.w = cellSize;
+                rect.h = cellSize;
+
+                SDL_RenderCopy(renderer, currPieceTexture, NULL, &rect);
+
+                continue;
+            }
+
+            switch (square[currBoardIndice]) { 
                 case Piece::White | Piece::King:
                     currPieceTexture = pieceTextures[Piece::White | Piece::King];
                     break;
@@ -195,27 +224,51 @@ void SDL2Wrapper::RenderPieces() {
 }
 
 int SDL2Wrapper::PollInputs() {
+	Board &board = board.GetInstance();
+	int* square = board.GetSquare();
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         // Check for the quit eventj
-        int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
+        int currBoardIndice = GetBoardIndiceFromCoordinates(mouseX, mouseY);
+
         switch (event.type) {
             case SDL_QUIT:
                 return false;
                 break;
             
-            // case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONDOWN:
+                if (event.button.button != SDL_BUTTON_LEFT)
+                    break;
+
+                if (currBoardIndice == -1) {
+                    break;
+                }
+
+                selectedPieceIndice = currBoardIndice;
+                selectedPiece = square[currBoardIndice];
+                break;
+
+            case SDL_MOUSEBUTTONUP:
+                if (event.button.button != SDL_BUTTON_LEFT)
+                    break;
+
+                if (currBoardIndice == -1) {
+                    break;
+                }
+                board.Move(selectedPieceIndice, currBoardIndice);
+                selectedPieceIndice = -1;
+                selectedPiece = -1;
+                break;
 
 
         };
-
-        printf("curr mouseX = %d, curr mouseY = %d\n", mouseX, mouseY);
         printf("predicted coord = %d\n", GetBoardIndiceFromCoordinates(mouseX, mouseY));
 
     }
 
-    
+    return 1; 
 }
 
 void SDL2Wrapper::Display() {

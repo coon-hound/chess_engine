@@ -5,6 +5,13 @@ Board& Board::GetInstance() {
 	return instance;
 }
 
+void Board::Move(int startingIndice, int destinationIndice) {
+	int pieceValue = square[startingIndice];
+	square[startingIndice] = 0;
+	square[destinationIndice] = pieceValue;
+
+}
+
 int* Board::GetSquare() {
 	return square;
 }

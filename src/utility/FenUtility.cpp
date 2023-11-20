@@ -53,7 +53,6 @@ void FenUtility::LoadPositionFromFen(std::string fen) {
 		}
 		if (isdigit(c)) {
 			file += c - '0';
-			printf("file = %d, c = %d\n", file, c - '0');
 			continue;
 		}
 
@@ -67,10 +66,11 @@ void FenUtility::LoadPositionFromFen(std::string fen) {
 		file ++;
 	}
 	
-	for(int i = 0; i < 8; i++) {
-		for (int j = 0; j < 8; j++) {
-			printf("%d ", square[i * 8 + j]);
-		}
-		printf("\n");
-	}
+	// debug
+	// for(int i = 0; i < 8; i++) {
+	// 	for (int j = 0; j < 8; j++) {
+	// 		printf("%d ", square[i * 8 + j]);
+	// 	}
+	// 	printf("\n");
+	// }
 }

@@ -8,6 +8,8 @@ class Board {
 public:
     static Board& GetInstance();
 
+	void Move(int startingIndice, int destinationIndice);
+
 	int* GetSquare();
 
 	Board(const Board&) = delete;

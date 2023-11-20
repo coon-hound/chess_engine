@@ -37,6 +37,11 @@ private:
 
 	int GetBoardIndiceFromCoordinates (int x, int y);
 
+	int selectedPieceIndice;
+	int selectedPiece;
+
+	int mouseX, mouseY;
+
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 

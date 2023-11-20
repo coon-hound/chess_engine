@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
 
     // The window is open: enter program loop (see SDL_PollEvent)
-    int running = 1;
+    int running = true;
     while (running) {
         running = wrapper.PollInputs();
 
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
         wrapper.RenderPieces();
 
         wrapper.Display();
-        wrapper.Delay(100);
+        wrapper.Delay(10);
 
     }
 
