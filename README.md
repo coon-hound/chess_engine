@@ -12,14 +12,11 @@ brew install sdl2_ttf
 ## Command Line Build
 
 ```
-mkdir build
-cd build
-cmake ..
-make
+sh compile.sh
 ```
 
 To run
 
 ```
-./bin/chess_engine
+./build/bin/chess_engine
 ```
