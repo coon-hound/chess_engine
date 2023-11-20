@@ -13,16 +13,17 @@ int SDL2Wrapper::GetBoardIndiceFromCoordinates (int x, int y) {
 	int cellSize = CHESS_BOARD_WIDTH / 8;
 
     x -= startX;
-    x /= cellSize; 
-    // x -= (x % cellSize);
-
     y -= startY;
-    y /= cellSize;
-    // y -= (y % cellSize);
-
-    if (x < 0 || y < 0 || x > 7 || y > 7) {
+    printf("before cellsize x = %d\n", x);
+    printf("before celssize y = %d\n", y);
+    if (x < 0 || y < 0) {
         return -1;
     }
+    x /= cellSize; 
+    y /= cellSize;
+
+    printf("start x = %d, start y = %d\n", startX, startY);
+    printf("x = %d, y = %d\n", x, y);
 
     int ret = y * 8 + x;
 
@@ -141,6 +142,7 @@ void SDL2Wrapper::RenderPieces() {
             SDL_Texture* currPieceTexture;
             int currBoardIndice = i * 8 + j;
 
+            // when holding a piece
             if (currBoardIndice == selectedPieceIndice && selectedPieceIndice != -1) {
                 printf("curr board indice = %d, selected piece indice = %d, selected piece = %d\n", currBoardIndice, selectedPieceIndice, selectedPiece);
 
@@ -255,6 +257,8 @@ int SDL2Wrapper::PollInputs() {
                     break;
 
                 if (currBoardIndice == -1) {
+                    selectedPieceIndice = -1;
+                    selectedPiece = -1;
                     break;
                 }
                 board.Move(selectedPieceIndice, currBoardIndice);
