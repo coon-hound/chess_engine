@@ -3,6 +3,9 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
+
+#include <cstdint>
 
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 800
@@ -23,6 +26,8 @@ public:
 	void RenderChessBoard();
 	void RenderPieces();
 
+	void PlaySound();
+
 	int PollInputs();
 
 	void Display();
@@ -35,17 +40,27 @@ private:
 	SDL2Wrapper();  // Private constructor
 	~SDL2Wrapper();  // Private destructor
 
+	// graphics
 	int GetBoardIndiceFromCoordinates (int x, int y);
+
+	SDL_Texture* pieceTextures[32];
+
+	SDL_Window* window;
+	SDL_Renderer* renderer;
 
 	int selectedPieceIndice;
 	int selectedPiece;
 
 	int mouseX, mouseY;
 
-	SDL_Window* window;
-	SDL_Renderer* renderer;
+	// sound
+	Mix_Chunk* pieceDown;
 
-	SDL_Texture* pieceTextures[32];
+	const int frequency = 22050;
+    const uint16_t format = AUDIO_S16SYS;
+    const int channels = 2;
+    const int chunk_size = 4096;
+
 };
 
 #endif  // SDL2WRAPPER_H

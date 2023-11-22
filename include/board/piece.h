@@ -14,6 +14,7 @@ public:
 	const static int White = 8;
 	const static int Black = 16;
 
+	// 01 000
 };
 
 #endif

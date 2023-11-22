@@ -14,16 +14,20 @@ int SDL2Wrapper::GetBoardIndiceFromCoordinates (int x, int y) {
 
     x -= startX;
     y -= startY;
-    printf("before cellsize x = %d\n", x);
-    printf("before celssize y = %d\n", y);
+    // printf("before cellsize x = %d\n", x);
+    // printf("before celssize y = %d\n", y);
     if (x < 0 || y < 0) {
         return -1;
     }
     x /= cellSize; 
     y /= cellSize;
 
-    printf("start x = %d, start y = %d\n", startX, startY);
-    printf("x = %d, y = %d\n", x, y);
+    // printf("start x = %d, start y = %d\n", startX, startY);
+    // printf("x = %d, y = %d\n", x, y);
+
+    if (x < 0 || y < 0 || x > 7 || y > 7) {
+        return -1;
+    }
 
     int ret = y * 8 + x;
 
@@ -43,6 +47,15 @@ SDL2Wrapper::SDL2Wrapper() {
 		exit(1);
     }
 
+    if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
+		exit(1);
+    }
+
+    if (Mix_OpenAudio(frequency, format, channels, chunk_size) != 0) {
+        printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+    }
+
     window = SDL_CreateWindow("Chess", SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
                                           SDL_WINDOW_OPENGL);
@@ -53,6 +66,8 @@ SDL2Wrapper::SDL2Wrapper() {
 		exit(1);
     }
 
+    IMG_Init(IMG_INIT_PNG);
+
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     if (renderer == nullptr) {
@@ -62,25 +77,28 @@ SDL2Wrapper::SDL2Wrapper() {
 		exit(1);
     } 
 
-    IMG_Init(IMG_INIT_PNG);
-
     //pieces texture (white pieces)
-    pieceTextures[Piece::White | Piece::King] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_klt60.png")); 
-    pieceTextures[Piece::White | Piece::Pawn] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_plt60.png")); 
-    pieceTextures[Piece::White | Piece::Knight] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_nlt60.png")); 
-    pieceTextures[Piece::White | Piece::Bishop] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_blt60.png")); 
-    pieceTextures[Piece::White | Piece::Rook] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_rlt60.png")); 
-    pieceTextures[Piece::White | Piece::Queen] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_qlt60.png")); 
-    
-    pieceTextures[Piece::Black | Piece::King] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_kdt60.png")); 
-    pieceTextures[Piece::Black | Piece::Pawn] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_pdt60.png")); 
-    pieceTextures[Piece::Black | Piece::Knight] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_ndt60.png")); 
-    pieceTextures[Piece::Black | Piece::Bishop] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_bdt60.png")); 
-    pieceTextures[Piece::Black | Piece::Rook] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_rdt60.png")); 
-    pieceTextures[Piece::Black | Piece::Queen] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/Chess_qdt60.png")); 
+    pieceTextures[Piece::White | Piece::King] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_klt60.png")); 
+    pieceTextures[Piece::White | Piece::Pawn] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_plt60.png")); 
+    pieceTextures[Piece::White | Piece::Knight] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_nlt60.png")); 
+    pieceTextures[Piece::White | Piece::Bishop] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_blt60.png")); 
+    pieceTextures[Piece::White | Piece::Rook] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_rlt60.png")); 
+    pieceTextures[Piece::White | Piece::Queen] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_qlt60.png")); 
+
+    pieceTextures[Piece::Black | Piece::King] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_kdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Pawn] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_pdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Knight] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_ndt60.png")); 
+    pieceTextures[Piece::Black | Piece::Bishop] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_bdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Rook] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_rdt60.png")); 
+    pieceTextures[Piece::Black | Piece::Queen] = SDL_CreateTextureFromSurface(renderer, IMG_Load("resources/graphics/Chess_qdt60.png")); 
 
     selectedPieceIndice = -1;
     selectedPiece = -1;
+
+    pieceDown = Mix_LoadWAV("resources/audio/dropPiece.mp3");
+    if (!pieceDown) {
+        printf("Failed to load sound! SDL_mixer Error: %s\n", Mix_GetError());
+    }
 }
 
 SDL2Wrapper::~SDL2Wrapper() {
@@ -88,7 +106,11 @@ SDL2Wrapper::~SDL2Wrapper() {
 	SDL_DestroyWindow(window);
 
     // free textures
-    // for (int i = 0; i < 
+    for (int i = 0; i < 32; i++) {
+        if (pieceTextures[i] != nullptr) {
+            SDL_DestroyTexture(pieceTextures[i]);
+        }
+    }
 
 	SDL_Quit();
 }
@@ -136,6 +158,8 @@ void SDL2Wrapper::RenderPieces() {
 
     int startX = (WINDOW_WIDTH - CHESS_BOARD_WIDTH) / 2;
     int startY = (WINDOW_HEIGHT - CHESS_BOARD_WIDTH) / 2;    
+    SDL_Texture* holdTexture = nullptr;
+    SDL_Rect* holdRect = nullptr;
 
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -144,9 +168,9 @@ void SDL2Wrapper::RenderPieces() {
 
             // when holding a piece
             if (currBoardIndice == selectedPieceIndice && selectedPieceIndice != -1) {
-                printf("curr board indice = %d, selected piece indice = %d, selected piece = %d\n", currBoardIndice, selectedPieceIndice, selectedPiece);
+                // printf("curr board indice = %d, selected piece indice = %d, selected piece = %d\n", currBoardIndice, selectedPieceIndice, selectedPiece);
 
-                currPieceTexture = pieceTextures[selectedPiece];                
+                holdTexture = pieceTextures[selectedPiece];                
 
                 SDL_Rect rect;
 
@@ -155,7 +179,8 @@ void SDL2Wrapper::RenderPieces() {
                 rect.w = cellSize;
                 rect.h = cellSize;
 
-                SDL_RenderCopy(renderer, currPieceTexture, NULL, &rect);
+                holdRect = &rect;
+
 
                 continue;
             }
@@ -223,6 +248,10 @@ void SDL2Wrapper::RenderPieces() {
             SDL_RenderCopy(renderer, currPieceTexture, NULL, &rect);
         }
     }
+
+    if (holdTexture != nullptr && holdRect != nullptr) {
+        SDL_RenderCopy(renderer, holdTexture, NULL, holdRect);
+    }
 }
 
 int SDL2Wrapper::PollInputs() {
@@ -268,11 +297,15 @@ int SDL2Wrapper::PollInputs() {
 
 
         };
-        printf("predicted coord = %d\n", GetBoardIndiceFromCoordinates(mouseX, mouseY));
+        // printf("predicted coord = %d\n", GetBoardIndiceFromCoordinates(mouseX, mouseY));
 
     }
 
     return 1; 
+}
+
+void SDL2Wrapper::PlaySound() {
+    int channel = Mix_PlayChannel(-1, pieceDown, 0);
 }
 
 void SDL2Wrapper::Display() {
